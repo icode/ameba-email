@@ -22,7 +22,7 @@ public class EmailFeature implements Feature {
     //    mail.smtp.port=
     private static Integer smtpPort;
     //    mail.ssl.enable=true
-    private static boolean SSLEnabled = true;
+    private static Boolean SSLEnabled = true;
     //    mail.user.name=
     private static String userName;
     //    mail.user.password=
