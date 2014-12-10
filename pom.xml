@@ -126,9 +126,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>ameba</groupId>
+            <groupId>org.amebastack</groupId>
             <artifactId>ameba</artifactId>
-            <version>0.1.6</version>
+            <version>0.1.6e</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
