@@ -1,5 +1,6 @@
 package ameba.feature;
 
+import ameba.mvc.template.httl.HttlMvcFeature;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.slf4j.Logger;
@@ -29,7 +30,7 @@ public class EmailFeature implements Feature {
     private static String userPassword;
     //    mail.from=
     private static String from;
-    private static Properties templateProperties = new Properties();
+    private static Properties templateProperties;
 
     public static String getHostName() {
         return hostName;
@@ -88,25 +89,15 @@ public class EmailFeature implements Feature {
         if (StringUtils.isBlank(from)) {
             logger.warn("mail.from未设置");
         }
-
+        templateProperties = HttlMvcFeature.getTemplateProperties();
         for (String key : configuration.keySet()) {
             if (key.startsWith("mail.template.")) {
-                templateProperties.put(key.replaceFirst("^mail\\.template\\.", ""), (String) configuration.get(key));
+                templateProperties.put(key.replaceFirst("^mail\\.", ""), configuration.get(key));
+                break;
             }
         }
 
-        if (!"true".equals(templateProperties.get("precompiled"))) {
-            templateProperties.put("precompiled", "false");
-        }
-
-        String encoding = (String) configuration.get("app.encoding");
-
-        if (StringUtils.isNotBlank(encoding)) {
-            templateProperties.put("input.encoding", encoding);
-            templateProperties.put("output.encoding", encoding);
-            templateProperties.put("message.encoding", encoding);
-        }
-
+        Emails.init();
         return true;
     }
 }
