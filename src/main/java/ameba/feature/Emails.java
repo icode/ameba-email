@@ -4,11 +4,13 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import ameba.lib.Akka;
+import ameba.util.IOUtils;
 import httl.Engine;
 import httl.Template;
 import org.apache.commons.mail.*;
 
 import java.io.IOException;
+import java.net.URL;
 import java.text.ParseException;
 
 import static ameba.feature.Emails.MessageType.HTML;
@@ -36,8 +38,13 @@ public class Emails {
     }
 
     public static String renderTemplate(String tplPath, Object bean) throws IOException, ParseException {
-        Template template = engine.getTemplate(directory + tplPath);
-        return (String) template.evaluate(bean);
+        String templatePath = directory + tplPath;
+        URL templateURL = IOUtils.getResource(templatePath);
+        if (templateURL != null) {
+            templatePath = templateURL.toExternalForm();
+        }
+        Template template = engine.getTemplate(templatePath);
+        return new String((byte[]) template.evaluate(bean), template.getEncoding());
     }
 
     public static void send(Email email) throws EmailException {

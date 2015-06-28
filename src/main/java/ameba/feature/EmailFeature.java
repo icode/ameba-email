@@ -1,6 +1,7 @@
 package ameba.feature;
 
 import ameba.mvc.template.httl.HttlMvcFeature;
+import ameba.mvc.template.httl.internal.RequestResolver;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.slf4j.Logger;
@@ -90,6 +91,7 @@ public class EmailFeature implements Feature {
             logger.warn("mail.from未设置");
         }
         templateProperties = HttlMvcFeature.getTemplateProperties();
+        templateProperties.put("resolvers+-", RequestResolver.class.getName());
         for (String key : configuration.keySet()) {
             if (key.startsWith("mail.template.")) {
                 templateProperties.put(key.replaceFirst("^mail\\.", ""), configuration.get(key));
