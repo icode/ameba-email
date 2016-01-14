@@ -191,19 +191,17 @@ public class Emails {
     }
 
     static void init() {
-        if (engine == null) {
-            synchronized (Emails.class) {
-                if (engine == null) {
-                    engine = BeanFactory.createBean(
-                            Engine.class, HttlUtil.initProperties("mailTemplate", EmailFeature.getTemplateProperties())
-                    );
-                    directory = EmailFeature.getTemplateProperties().getProperty("template.directory");
-                    if (!directory.endsWith("/")) {
-                        directory += "/";
-                    }
-                    charset = EmailFeature.getTemplateProperties().getProperty("output.encoding");
-                    actor = Akka.system().actorOf(Props.create(SendWorker.class));
+        synchronized (Emails.class) {
+            if (engine == null) {
+                engine = BeanFactory.createBean(
+                        Engine.class, HttlUtil.initProperties("mailTemplate", EmailFeature.getTemplateProperties())
+                );
+                directory = EmailFeature.getTemplateProperties().getProperty("template.directory");
+                if (!directory.endsWith("/")) {
+                    directory += "/";
                 }
+                charset = EmailFeature.getTemplateProperties().getProperty("output.encoding");
+                actor = Akka.system().actorOf(Props.create(SendWorker.class));
             }
         }
     }
