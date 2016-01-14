@@ -4,9 +4,11 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import ameba.lib.Akka;
+import ameba.mvc.template.httl.HttlUtil;
 import ameba.util.IOUtils;
 import httl.Engine;
 import httl.Template;
+import httl.util.BeanFactory;
 import org.apache.commons.mail.*;
 
 import java.io.IOException;
@@ -192,7 +194,9 @@ public class Emails {
         if (engine == null) {
             synchronized (Emails.class) {
                 if (engine == null) {
-                    engine = Engine.getEngine("mailTemplate", EmailFeature.getTemplateProperties());
+                    engine = BeanFactory.createBean(
+                            Engine.class, HttlUtil.initProperties("mailTemplate", EmailFeature.getTemplateProperties())
+                    );
                     directory = EmailFeature.getTemplateProperties().getProperty("template.directory");
                     if (!directory.endsWith("/")) {
                         directory += "/";
