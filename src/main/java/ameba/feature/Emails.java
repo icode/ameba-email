@@ -1,11 +1,9 @@
 package ameba.feature;
 
-import akka.actor.ActorRef;
-import akka.actor.Props;
-import akka.actor.UntypedActor;
-import ameba.lib.Akka;
+import ameba.lib.Fibers;
 import ameba.mvc.template.httl.HttlUtil;
 import ameba.util.IOUtils;
+import co.paralleluniverse.common.util.Exceptions;
 import httl.Engine;
 import httl.Template;
 import httl.util.BeanFactory;
@@ -25,7 +23,6 @@ public class Emails {
     private static Engine engine;
     private static String directory;
     private static String charset;
-    private static ActorRef actor;
 
     private Emails() {
     }
@@ -54,12 +51,40 @@ public class Emails {
         email.send();
     }
 
-    public static void asyncSend(Message message) {
-        actor.tell(message, ActorRef.noSender());
+    public static void asyncSend(Message msg) {
+        Fibers.start(() -> {
+            try {
+                switch (msg.getType()) {
+                    case HTML:
+                        sendHtml(msg.getSubject(), msg.getContent(), msg.getTos());
+                        break;
+                    case TEXT:
+                        sendText(msg.getSubject(), msg.getContent(), msg.getTos());
+                        break;
+                }
+            } catch (EmailException e) {
+                Exceptions.rethrow(e);
+            }
+        });
     }
 
-    public static void asyncSend(TemplateMessage message) {
-        actor.tell(message, ActorRef.noSender());
+    public static void asyncSend(TemplateMessage msg) {
+        Fibers.start(() -> {
+            try {
+                switch (msg.getType()) {
+                    case HTML:
+                        ((HtmlEmail) msg.getEmail()).setHtmlMsg(renderTemplate(msg.getTemplate(), msg.getModel()));
+                        send(msg.getEmail());
+                        break;
+                    case TEXT:
+                        msg.getEmail().setMsg(renderTemplate(msg.getTemplate(), msg.getModel()));
+                        send(msg.getEmail());
+                        break;
+                }
+            } catch (EmailException | IOException | ParseException e) {
+                Exceptions.rethrow(e);
+            }
+        });
     }
 
     /**
@@ -201,7 +226,6 @@ public class Emails {
                     directory += "/";
                 }
                 charset = EmailFeature.getTemplateProperties().getProperty("output.encoding");
-                actor = Akka.system().actorOf(Props.create(SendWorker.class));
             }
         }
     }
@@ -323,42 +347,6 @@ public class Emails {
 
         public void setEmail(Email email) {
             this.email = email;
-        }
-    }
-
-    private static class SendWorker extends UntypedActor {
-
-        @Override
-        public void onReceive(Object message) throws Exception {
-            if (message instanceof Message) {
-                Message msg = (Message) message;
-                switch (msg.getType()) {
-                    case HTML:
-                        sendHtml(msg.getSubject(), msg.getContent(), msg.getTos());
-                        break;
-                    case TEXT:
-                        sendText(msg.getSubject(), msg.getContent(), msg.getTos());
-                        break;
-                    default:
-                        unhandled(message);
-                }
-            } else if (message instanceof TemplateMessage) {
-                TemplateMessage msg = (TemplateMessage) message;
-                switch (msg.getType()) {
-                    case HTML:
-                        ((HtmlEmail) msg.getEmail()).setHtmlMsg(renderTemplate(msg.getTemplate(), msg.getModel()));
-                        send(msg.getEmail());
-                        break;
-                    case TEXT:
-                        msg.getEmail().setMsg(renderTemplate(msg.getTemplate(), msg.getModel()));
-                        send(msg.getEmail());
-                        break;
-                    default:
-                        unhandled(message);
-                }
-            } else {
-                unhandled(message);
-            }
         }
     }
 }
