@@ -6,7 +6,7 @@
 
     <groupId>org.amebastack.module</groupId>
     <artifactId>ameba-email</artifactId>
-    <version>0.1.9</version>
+    <version>0.1.13-SNAPSHOT</version>
 
     <name>Ameba-Framework-Email</name>
     <description>A useful Java framework email support!</description>
@@ -128,13 +128,13 @@
         <dependency>
             <groupId>org.amebastack</groupId>
             <artifactId>ameba</artifactId>
-            <version>0.1.11</version>
+            <version>0.1.13-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.amebastack.template</groupId>
             <artifactId>ameba-mvc-httl</artifactId>
-            <version>0.1.9</version>
+            <version>0.1.13-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
